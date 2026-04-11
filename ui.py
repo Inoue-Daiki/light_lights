@@ -16,3 +16,4 @@ def clear_screen() -> None:
 
 def wait_for_enter() -> None:
     input("\nエンターキーで続行")
+    clear_screen()
