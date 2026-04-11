@@ -1,0 +1,47 @@
+"""ゲームバランスと定数の一元管理モジュール。"""
+
+from __future__ import annotations
+
+# ── 階層 ──
+TOTAL_FLOORS = 8
+
+# ── 主人公の基礎ステータス ──
+BASE_HP = 30
+BASE_ATTACK = 8
+BASE_DEFENSE = 4
+BASE_POTIONS = 2
+
+# ── 恒久強化の 1 段階あたり上昇値 ──
+HP_PER_UPGRADE = 5
+ATTACK_PER_UPGRADE = 2
+DEFENSE_PER_UPGRADE = 2
+
+# ── 回復薬 ──
+POTION_HEAL_AMOUNT = 10
+
+# ── 戦闘 ──
+DAMAGE_VARIANCE_MIN = -1
+DAMAGE_VARIANCE_MAX = 2
+MIN_DAMAGE = 1
+
+# ── 敵スケーリング ──
+ENEMY_HP_PER_FLOOR = 3
+ENEMY_ATTACK_PER_FLOOR = 1
+ENEMY_DEFENSE_PER_FLOOR_DIVISOR = 2
+ENEMY_SHARD_BASE = 8
+ENEMY_SHARD_PER_FLOOR = 4
+ENEMY_GOLD_BASE = 6
+ENEMY_GOLD_PER_FLOOR = 3
+
+# ── 逃走ペナルティ ──
+ESCAPE_PENALTY_RATE = 0.3
+
+# ── イベント ──
+EVENT_TRIGGER_CHANCE = 0.6
+FREE_EVENT_CHANCE = 0.4
+
+# ── 踏破報酬 ──
+CLEAR_BONUS_SHARDS = 20
+
+# ── ショップ ──
+SHOP_UPGRADE_COST = 10

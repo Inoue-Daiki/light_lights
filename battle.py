@@ -2,12 +2,23 @@ from __future__ import annotations
 
 import math
 import random
-from typing import Callable
 
+from config import (
+    DAMAGE_VARIANCE_MAX,
+    DAMAGE_VARIANCE_MIN,
+    ENEMY_ATTACK_PER_FLOOR,
+    ENEMY_DEFENSE_PER_FLOOR_DIVISOR,
+    ENEMY_GOLD_BASE,
+    ENEMY_GOLD_PER_FLOOR,
+    ENEMY_HP_PER_FLOOR,
+    ENEMY_SHARD_BASE,
+    ENEMY_SHARD_PER_FLOOR,
+    ESCAPE_PENALTY_RATE,
+    MIN_DAMAGE,
+    POTION_HEAL_AMOUNT,
+)
 from models import BattleReward, Enemy, EnemyTemplate, Hero, RunState
-
-
-PromptChoice = Callable[[str, set[str]], str]
+from ui import PromptChoice
 
 
 ENEMY_TEMPLATES = [
@@ -20,21 +31,21 @@ ENEMY_TEMPLATES = [
 
 
 def clamp_damage(raw_damage: int) -> int:
-    return max(1, raw_damage)
+    return max(MIN_DAMAGE, raw_damage)
 
 
 def attack_damage(attack: int, defense: int) -> int:
-    variance = random.randint(-1, 2)
+    variance = random.randint(DAMAGE_VARIANCE_MIN, DAMAGE_VARIANCE_MAX)
     return clamp_damage(attack - defense + variance)
 
 
 def create_enemy(floor: int) -> Enemy:
     template = random.choice(ENEMY_TEMPLATES)
-    hp = template.hp + floor * 3
-    attack = template.attack + floor
-    defense = template.defense + floor // 2
-    shard_reward = 8 + floor * 4
-    gold_reward = 6 + floor * 3
+    hp = template.hp + floor * ENEMY_HP_PER_FLOOR
+    attack = template.attack + floor * ENEMY_ATTACK_PER_FLOOR
+    defense = template.defense + floor // ENEMY_DEFENSE_PER_FLOOR_DIVISOR
+    shard_reward = ENEMY_SHARD_BASE + floor * ENEMY_SHARD_PER_FLOOR
+    gold_reward = ENEMY_GOLD_BASE + floor * ENEMY_GOLD_PER_FLOOR
     return Enemy(
         name=template.name,
         hp=hp,
@@ -50,7 +61,7 @@ def use_potion(hero: Hero) -> bool:
         print("回復薬がありません。")
         return False
     hero.potions -= 1
-    healed = hero.heal(10)
+    healed = hero.heal(POTION_HEAL_AMOUNT)
     print(f"回復薬を使ってHPを{healed}回復した。")
     return True
 
@@ -70,9 +81,9 @@ def perform_enemy_attack(hero: Hero, enemy: Enemy) -> None:
 def apply_escape_penalty(run_state: RunState) -> None:
     penalty_targets: list[tuple[str, int]] = []
     if run_state.soul_shards > 0:
-        penalty_targets.append(("欠片", max(1, math.ceil(run_state.soul_shards * 0.3))))
+        penalty_targets.append(("欠片", max(1, math.ceil(run_state.soul_shards * ESCAPE_PENALTY_RATE))))
     if run_state.gold > 0:
-        penalty_targets.append(("所持金", max(1, math.ceil(run_state.gold * 0.3))))
+        penalty_targets.append(("所持金", max(1, math.ceil(run_state.gold * ESCAPE_PENALTY_RATE))))
 
     if not penalty_targets:
         print("何も持っていなかったため、失うものなく逃げ切った。")

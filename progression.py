@@ -1,37 +1,43 @@
 from __future__ import annotations
 
-from typing import Callable
-
 from battle import battle, create_enemy
+from config import (
+    ATTACK_PER_UPGRADE,
+    BASE_ATTACK,
+    BASE_DEFENSE,
+    BASE_HP,
+    CLEAR_BONUS_SHARDS,
+    DEFENSE_PER_UPGRADE,
+    HP_PER_UPGRADE,
+    SHOP_UPGRADE_COST,
+    TOTAL_FLOORS,
+)
 from events import Event, get_event_diagram_label, plan_event, run_event
-from models import Hero, PermanentUpgrades, RunState, ShopUpgrade, TOTAL_FLOORS
-from ui import clear_screen, wait_for_enter
-
-
-PromptChoice = Callable[[str, set[str]], str]
+from models import Hero, PermanentUpgrades, RunState, ShopUpgrade
+from ui import PromptChoice, clear_screen, wait_for_enter
 FloorEventPlan = dict[int, Event | None]
 
 
 SHOP_UPGRADES = [
-    ShopUpgrade("1", "HP強化", 10, "hp", 1, 5, "+5", "最大HPが恒久的に5上がった。"),
-    ShopUpgrade("2", "攻撃力強化", 10, "attack", 1, 2, "+2", "攻撃力が恒久的に2上がった。"),
-    ShopUpgrade("3", "防御力強化", 10, "defense", 1, 2, "+2", "防御力が恒久的に2上がった。"),
+    ShopUpgrade("1", "HP強化", SHOP_UPGRADE_COST, "hp", 1, HP_PER_UPGRADE, f"+{HP_PER_UPGRADE}", f"最大HPが恒久的に{HP_PER_UPGRADE}上がった。"),
+    ShopUpgrade("2", "攻撃力強化", SHOP_UPGRADE_COST, "attack", 1, ATTACK_PER_UPGRADE, f"+{ATTACK_PER_UPGRADE}", f"攻撃力が恒久的に{ATTACK_PER_UPGRADE}上がった。"),
+    ShopUpgrade("3", "防御力強化", SHOP_UPGRADE_COST, "defense", 1, DEFENSE_PER_UPGRADE, f"+{DEFENSE_PER_UPGRADE}", f"防御力が恒久的に{DEFENSE_PER_UPGRADE}上がった。"),
 ]
 
 
 def build_hero(upgrades: PermanentUpgrades) -> Hero:
-    max_hp = 30 + upgrades.hp * 5
+    max_hp = BASE_HP + upgrades.hp * HP_PER_UPGRADE
     return Hero(
         max_hp=max_hp,
         hp=max_hp,
-        attack=8 + upgrades.attack * 2,
-        defense=4 + upgrades.defense * 2,
+        attack=BASE_ATTACK + upgrades.attack * ATTACK_PER_UPGRADE,
+        defense=BASE_DEFENSE + upgrades.defense * DEFENSE_PER_UPGRADE,
     )
 
 
 def get_upgrade_summary(upgrades: PermanentUpgrades) -> str:
     return (
-        f"HP+{upgrades.hp * 5} 攻撃力+{upgrades.attack * 2} 防御力+{upgrades.defense * 2}"
+        f"HP+{upgrades.hp * HP_PER_UPGRADE} 攻撃力+{upgrades.attack * ATTACK_PER_UPGRADE} 防御力+{upgrades.defense * DEFENSE_PER_UPGRADE}"
     )
 
 
@@ -147,6 +153,12 @@ def shop_phase(
         wait_for_enter()
 
 
+def reset_permanent_upgrades(upgrades: PermanentUpgrades) -> None:
+    upgrades.hp = 0
+    upgrades.attack = 0
+    upgrades.defense = 0
+
+
 def reset_hero_status(hero: Hero, upgrades: PermanentUpgrades) -> None:
     base_hero = build_hero(upgrades)
     hero.max_hp = base_hero.max_hp
@@ -154,6 +166,43 @@ def reset_hero_status(hero: Hero, upgrades: PermanentUpgrades) -> None:
     hero.attack = base_hero.attack
     hero.defense = base_hero.defense
     hero.potions = base_hero.potions
+
+
+def _handle_battle_floor(
+    floor: int,
+    hero: Hero,
+    run_state: RunState,
+    upgrades: PermanentUpgrades,
+    prompt_choice: PromptChoice,
+) -> bool | None:
+    """戦闘階の処理。死亡なら False、踏破継続なら None を返す。"""
+    enemy = create_enemy(floor)
+    battle_reward = battle(hero, enemy, run_state, prompt_choice)
+    run_state.soul_shards += battle_reward.soul_shards
+    run_state.gold += battle_reward.gold
+
+    if battle_reward.escaped:
+        print("戦闘から離脱した。")
+        wait_for_enter()
+        return None
+
+    if battle_reward.soul_shards > 0:
+        print("戦闘終了。恒久強化を選択できる。")
+        wait_for_enter()
+        run_state.soul_shards = shop_phase(
+            upgrades, run_state.soul_shards, prompt_choice, hero,
+        )
+
+    if not hero.is_alive():
+        reset_permanent_upgrades(upgrades)
+        reset_hero_status(hero, upgrades)
+        print(
+            f"主人公は力尽きた。到達階層は {floor}/{TOTAL_FLOORS}。恒久強化を含むステータスをリセットした。"
+        )
+        wait_for_enter()
+        return False
+
+    return None
 
 
 def run_once(
@@ -177,34 +226,12 @@ def run_once(
             wait_for_enter()
             continue
 
-        enemy = create_enemy(floor)
-        battle_reward = battle(hero, enemy, run_state, prompt_choice)
-        run_state.soul_shards += battle_reward.soul_shards
-        run_state.gold += battle_reward.gold
-
-        if battle_reward.escaped:
-            print("戦闘から離脱した。")
-            wait_for_enter()
-            continue
-
-        if battle_reward.soul_shards > 0:
-            print("戦闘終了。恒久強化を選択できる。")
-            wait_for_enter()
-            run_state.soul_shards = shop_phase(
-                upgrades,
-                run_state.soul_shards,
-                prompt_choice,
-                hero,
-            )
-
-        if not hero.is_alive():
-            reset_hero_status(hero, upgrades)
-            print("主人公は力尽きた。現在のステータスをリセットした。")
-            wait_for_enter()
-            return False, run_state.soul_shards
+        result = _handle_battle_floor(floor, hero, run_state, upgrades, prompt_choice)
+        if result is not None:
+            return result, run_state.soul_shards
 
     print("最深部を突破した。探索成功。")
-    run_state.soul_shards += 20
-    print("踏破報酬として欠片を20獲得。")
+    run_state.soul_shards += CLEAR_BONUS_SHARDS
+    print(f"踏破報酬として欠片を{CLEAR_BONUS_SHARDS}獲得。")
     wait_for_enter()
     return True, run_state.soul_shards

@@ -2,13 +2,10 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
-from typing import Callable
 
+from config import EVENT_TRIGGER_CHANCE, FREE_EVENT_CHANCE
 from models import EventOption, Hero, RunState
-from ui import clear_screen
-
-
-PromptChoice = Callable[[str, set[str]], str]
+from ui import PromptChoice, clear_screen
 
 
 RISK_OPTIONS = [
@@ -51,7 +48,6 @@ class BonusHealEvent(FreeEvent):
     name = "小さな幸運"
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
-        del prompt_choice, run_state
         clear_screen()
         print(f"\nボーナスイベント: {self.name}")
         heal_amount = random.randint(6, 12)
@@ -63,7 +59,6 @@ class BonusGoldEvent(FreeEvent):
     name = "小さな幸運"
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
-        del hero, prompt_choice
         clear_screen()
         print(f"\nボーナスイベント: {self.name}")
         gold_amount = random.randint(8, 16)
@@ -143,9 +138,9 @@ PAID_EVENTS: list[PaidEvent] = [
 
 
 def plan_event() -> Event | None:
-    if random.random() >= 0.6:
+    if random.random() >= EVENT_TRIGGER_CHANCE:
         return None
-    if random.random() < 0.4:
+    if random.random() < FREE_EVENT_CHANCE:
         return random.choice(FREE_EVENTS)
     return random.choice(PAID_EVENTS)
 
@@ -169,10 +164,3 @@ def run_event(
     prompt_choice: PromptChoice,
 ) -> None:
     event.trigger(hero, run_state, prompt_choice)
-
-
-def trigger_event(hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
-    planned_event = plan_event()
-    if planned_event is None:
-        return
-    run_event(planned_event, hero, run_state, prompt_choice)

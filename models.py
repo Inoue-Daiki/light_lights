@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
-TOTAL_FLOORS = 8
+from config import BASE_POTIONS
 
 
 @dataclass
@@ -61,7 +60,7 @@ class Hero:
     hp: int
     attack: int
     defense: int
-    potions: int = 2
+    potions: int = BASE_POTIONS
 
     def is_alive(self) -> bool:
         return self.hp > 0
@@ -71,8 +70,8 @@ class Hero:
         self.hp = min(self.max_hp, self.hp + amount)
         return self.hp - old_hp
 
-    def take_damage(self, amount: int) -> int:
-        actual = max(0, amount)
+    def take_damage(self, raw_damage: int) -> int:
+        actual = max(0, raw_damage)
         self.hp = max(0, self.hp - actual)
         return actual
 

@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-import random
-
 from models import PermanentUpgrades
 from progression import get_upgrade_summary, run_once
-from ui import wait_for_enter
+from ui import PromptChoice, wait_for_enter
 
 
 def prompt_choice(prompt: str, options: set[str]) -> str:
@@ -24,7 +22,6 @@ def show_title() -> None:
 
 
 def main() -> None:
-    random.seed()
     upgrades = PermanentUpgrades()
     soul_shards = 0
 

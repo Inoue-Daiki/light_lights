@@ -34,15 +34,18 @@ python main.py
 - 無料のボーナスイベントで回復または所持金を獲得
 - 所持金を支払うイベント
 - 低リスク / 中リスク / 高リスクで成功率と報酬量が変わるイベント
-- 死亡時に現在のステータスをリセット
+- 死亡時に到達階層を表示し、恒久強化を含むステータスをリセット
 
 ## コード構成
 
 - [main.py](main.py): 起動とメインメニュー
+- [config.py](config.py): ゲームバランス定数の一元管理
 - [battle.py](battle.py): 敵生成と戦闘処理
 - [events.py](events.py): Event クラス群とイベント発火
 - [progression.py](progression.py): 探索進行とショップ処理
 - [models.py](models.py): 共通データ構造
+- [ui.py](ui.py): 画面制御・入力ユーティリティ・共通型
+- [ARCHITECTURE.md](ARCHITECTURE.md): アーキテクチャドキュメント
 
 ## 次に拡張しやすい要素
 
