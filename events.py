@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from config import EVENT_TRIGGER_CHANCE, FREE_EVENT_CHANCE
 from models import EventOption, Hero, RunState
@@ -15,7 +16,14 @@ RISK_OPTIONS = [
 ]
 
 
-def _grant_reward(hero: Hero, reward_kind: str, reward_amount: int) -> None:
+def _grant_reward(
+    hero: Hero, run_state: RunState, reward_kind: str, reward_amount: int
+) -> None:
+    """reward_kind: "heal" | "gold" | "potion" | "attack" | "defense" | "speed" """
+    if reward_kind == "gold":
+        run_state.gold += reward_amount
+        print(f"所持金を{reward_amount}獲得した。")
+        return
     if reward_kind == "heal":
         healed = hero.heal(reward_amount)
         print(f"HPが{healed}回復した。")
@@ -48,41 +56,42 @@ class Event(ABC):
         raise NotImplementedError
 
 
-class FreeEvent(Event):
-    pass
+# ── テンプレート ──
 
 
-# ── 無料イベント ──
+@dataclass(frozen=True)
+class FreeEventTemplate(Event):
+    """リスクなし・コストなしのボーナスイベント。
 
+    新しい無料イベントを追加するには FREE_EVENT_TEMPLATES にエントリを追加する。
+    reward_kind: "heal" | "gold" | "potion" | "attack" | "defense" | "speed"
+    """
 
-class BonusHealEvent(FreeEvent):
-    name = "小さな幸運"
-    diagram_label = "泉"
-
-    def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
-        clear_screen()
-        print(f"\nボーナスイベント: {self.name}")
-        heal_amount = random.randint(6, 12)
-        healed = hero.heal(heal_amount)
-        print(f"澄んだ泉を見つけた。HPが{healed}回復した。")
-
-
-class BonusGoldEvent(FreeEvent):
-    name = "小さな幸運"
-    diagram_label = "袋"
+    name: str
+    diagram_label: str
+    flavor_text: str
+    reward_kind: str
+    min_amount: int
+    max_amount: int
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
         clear_screen()
         print(f"\nボーナスイベント: {self.name}")
-        gold_amount = random.randint(8, 16)
-        run_state.gold += gold_amount
-        print(f"落し物の袋を見つけた。所持金を{gold_amount}獲得した。")
+        amount = random.randint(self.min_amount, self.max_amount)
+        print(self.flavor_text)
+        _grant_reward(hero, run_state, self.reward_kind, amount)
 
 
-# ── 有料イベント ──
+@dataclass(frozen=True)
+class PaidEventTemplate(Event):
+    """所持金を払ってリターンを狙うリスク型イベント。
 
+    新しい有料イベントを追加するには PAID_EVENT_TEMPLATES にエントリを追加する。
+    reward_kind: "heal" | "gold" | "potion" | "attack" | "defense" | "speed"
+    """
 
-class PaidEvent(Event, ABC):
+    name: str
+    diagram_label: str
     description: str
     reward_kind: str
 
@@ -108,60 +117,27 @@ class PaidEvent(Event, ABC):
             run_state.gold -= option.cost
             print(f"{option.label}リスクに挑戦。所持金を{option.cost}支払った。")
             if random.random() <= option.success_rate:
-                amount = self._resolve_reward_amount(option.amount)
-                _grant_reward(hero, self.reward_kind, amount)
+                amount = option.amount * 4 if self.reward_kind == "heal" else option.amount
+                _grant_reward(hero, run_state, self.reward_kind, amount)
             else:
                 print("失敗した。支払った所持金だけを失った。")
             return
 
-    def _resolve_reward_amount(self, base: int) -> int:
-        if self.reward_kind == "heal":
-            return base * 4
-        return base
 
+# ── イベント一覧 ──
+# 新しいイベントを追加するにはここにエントリを追加するだけでよい。
 
-class MerchantEvent(PaidEvent):
-    name = "行商人"
-    diagram_label = "商"
-    description = "代金を払えば回復薬を分けてもらえる。"
-    reward_kind = "potion"
+FREE_EVENT_TEMPLATES: list[FreeEventTemplate] = [
+    FreeEventTemplate("小さな幸運", "泉", "澄んだ泉を見つけた。",     "heal", 6, 12),
+    FreeEventTemplate("小さな幸運", "袋", "落し物の袋を見つけた。",   "gold", 8, 16),
+]
 
-
-class ShrineEvent(PaidEvent):
-    name = "怪しい祭壇"
-    diagram_label = "祭"
-    description = "供物を捧げれば力を得られるかもしれない。"
-    reward_kind = "attack"
-
-
-class ForgeEvent(PaidEvent):
-    name = "鉄壁の鍛冶台"
-    diagram_label = "鍛"
-    description = "資材を払えば防具を鍛えられる。"
-    reward_kind = "defense"
-
-
-class PilgrimSpringEvent(PaidEvent):
-    name = "巡礼の泉"
-    diagram_label = "巡"
-    description = "硬貨を投げれば癒やしが返ってくることがある。"
-    reward_kind = "heal"
-
-
-class WindPathEvent(PaidEvent):
-    name = "風読みの道標"
-    diagram_label = "風"
-    description = "旅路を読む者に対価を払えば、身のこなしを磨ける。"
-    reward_kind = "speed"
-
-
-FREE_EVENTS: list[FreeEvent] = [BonusHealEvent(), BonusGoldEvent()]
-PAID_EVENTS: list[PaidEvent] = [
-    MerchantEvent(),
-    ShrineEvent(),
-    ForgeEvent(),
-    PilgrimSpringEvent(),
-    WindPathEvent(),
+PAID_EVENT_TEMPLATES: list[PaidEventTemplate] = [
+    PaidEventTemplate("行商人",       "商", "代金を払えば回復薬を分けてもらえる。",             "potion"),
+    PaidEventTemplate("怪しい祭壇",   "祭", "供物を捧げれば力を得られるかもしれない。",         "attack"),
+    PaidEventTemplate("鉄壁の鍛冶台", "鍛", "資材を払えば防具を鍛えられる。",                   "defense"),
+    PaidEventTemplate("巡礼の泉",     "巡", "硬貨を投げれば癒やしが返ってくることがある。",     "heal"),
+    PaidEventTemplate("風読みの道標", "風", "旅路を読む者に対価を払えば、身のこなしを磨ける。", "speed"),
 ]
 
 
@@ -172,8 +148,8 @@ def plan_event() -> Event | None:
     if random.random() >= EVENT_TRIGGER_CHANCE:
         return None
     if random.random() < FREE_EVENT_CHANCE:
-        return random.choice(FREE_EVENTS)
-    return random.choice(PAID_EVENTS)
+        return random.choice(FREE_EVENT_TEMPLATES)
+    return random.choice(PAID_EVENT_TEMPLATES)
 
 
 def run_event(
