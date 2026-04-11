@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from game import run_once
 from models import PermanentUpgrades
-from shop import get_upgrade_summary
+from shop import get_upgrade_summary, shop_phase
 from ui import wait_for_enter
 
 
@@ -33,10 +33,11 @@ def main() -> None:
         print("\nメニュー")
         print("1: 探索に出る")
         print("2: 恒久強化を見る")
-        print("3: 終了")
-        choice = prompt_choice("選択: ", {"1", "2", "3"})
+        print("3: 恒久強化をする")
+        print("4: 終了")
+        choice = prompt_choice("選択: ", {"1", "2", "3", "4"})
 
-        if choice == "3":
+        if choice == "4":
             print("ゲームを終了します。")
             return
 
@@ -44,6 +45,10 @@ def main() -> None:
             print(f"恒久強化 {get_upgrade_summary(upgrades)}")
             print(f"所持欠片: {soul_shards}")
             wait_for_enter()
+            continue
+
+        if choice == "3":
+            soul_shards = shop_phase(upgrades, soul_shards, prompt_choice)
             continue
 
         result = run_once(upgrades, soul_shards, prompt_choice)
