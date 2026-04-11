@@ -4,6 +4,7 @@ import random
 
 from models import PermanentUpgrades
 from progression import get_upgrade_summary, run_once
+from ui import wait_for_enter
 
 
 def prompt_choice(prompt: str, options: set[str]) -> str:
@@ -28,6 +29,7 @@ def main() -> None:
     soul_shards = 0
 
     show_title()
+    wait_for_enter()
 
     while True:
         print("\nメニュー")
@@ -43,6 +45,7 @@ def main() -> None:
         if choice == "2":
             print(f"恒久強化 {get_upgrade_summary(upgrades)}")
             print(f"所持欠片: {soul_shards}")
+            wait_for_enter()
             continue
 
         won, soul_shards = run_once(upgrades, soul_shards, prompt_choice)

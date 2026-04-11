@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 from models import EventOption, Hero, RunState
+from ui import clear_screen
 
 
 PromptChoice = Callable[[str, set[str]], str]
@@ -51,6 +52,7 @@ class BonusHealEvent(FreeEvent):
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
         del prompt_choice, run_state
+        clear_screen()
         print(f"\nボーナスイベント: {self.name}")
         heal_amount = random.randint(6, 12)
         healed = hero.heal(heal_amount)
@@ -62,6 +64,7 @@ class BonusGoldEvent(FreeEvent):
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
         del hero, prompt_choice
+        clear_screen()
         print(f"\nボーナスイベント: {self.name}")
         gold_amount = random.randint(8, 16)
         run_state.gold += gold_amount
@@ -73,6 +76,7 @@ class PaidEvent(Event, ABC):
     reward_kind: str
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
+        clear_screen()
         print(f"\nイベント: {self.name}")
         print(self.description)
         print("1: 低リスク  2: 中リスク  3: 高リスク  4: 見送る")
@@ -138,8 +142,37 @@ PAID_EVENTS: list[PaidEvent] = [
 ]
 
 
-def trigger_event(hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
+def plan_event() -> Event | None:
+    if random.random() >= 0.6:
+        return None
     if random.random() < 0.4:
-        random.choice(FREE_EVENTS).trigger(hero, run_state, prompt_choice)
+        return random.choice(FREE_EVENTS)
+    return random.choice(PAID_EVENTS)
+
+
+def get_event_diagram_label(event: Event) -> str:
+    labels = {
+        "BonusHealEvent": "泉",
+        "BonusGoldEvent": "袋",
+        "MerchantEvent": "商",
+        "ShrineEvent": "祭",
+        "ForgeEvent": "鍛",
+        "PilgrimSpringEvent": "巡",
+    }
+    return labels.get(event.__class__.__name__, event.name[:1])
+
+
+def run_event(
+    event: Event,
+    hero: Hero,
+    run_state: RunState,
+    prompt_choice: PromptChoice,
+) -> None:
+    event.trigger(hero, run_state, prompt_choice)
+
+
+def trigger_event(hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
+    planned_event = plan_event()
+    if planned_event is None:
         return
-    random.choice(PAID_EVENTS).trigger(hero, run_state, prompt_choice)
+    run_event(planned_event, hero, run_state, prompt_choice)
