@@ -6,7 +6,8 @@
 config.py    ゲームバランス定数の一元管理（他モジュールに依存しない最上流）
 models.py    純粋なデータ構造（Hero, Enemy, RunState, RunResult など）
 ui.py        画面制御・入力ユーティリティ・PromptChoice 型エイリアス
-battle.py    敵生成・ターン制戦闘エンジン
+enemies.py   敵テンプレート定義・階層スケーリング・敵生成
+battle.py    ターン制戦闘エンジン
 events.py    イベント階層クラスとイベント発火
 shop.py      ショップ・恒久強化・主人公構築
 route.py     ルート木の生成・ダイアグラム表示・分岐選択
@@ -23,13 +24,14 @@ models.py          config
     ↑
 ui.py              stdlib のみ
     ↑
+enemies.py         config, models
 battle.py          config, models, ui
 events.py          config, models, ui
 shop.py            config, models, ui
     ↑
 route.py           config, events, models, ui
     ↑
-game.py            battle, config, events, models, route, shop, ui
+game.py            battle, config, enemies, events, models, route, shop, ui
     ↑
 main.py            game, models, shop, ui
 ```
@@ -55,7 +57,8 @@ main.py            game, models, shop, ui
 | `config.py` | ゲーム定数の一元管理 | 全定数 |
 | `models.py` | 純粋データ構造 | `Hero`, `Enemy`, `RunState`, `RunResult`, `PermanentUpgrades` |
 | `ui.py` | 画面制御・入力型 | `clear_screen()`, `wait_for_enter()`, `PromptChoice` |
-| `battle.py` | 敵生成・戦闘エンジン | `battle()`, `create_enemy()` |
+| `enemies.py` | 敵テンプレート・生成 | `EnemyTemplate`, `ENEMY_TEMPLATES`, `create_enemy()` |
+| `battle.py` | 戦闘エンジン | `battle()` |
 | `events.py` | イベント定義と発火 | `Event` 階層, `plan_event()`, `run_event()` |
 | `shop.py` | ショップ・恒久強化・主人公構築 | `shop_phase()`, `build_hero()`, `get_upgrade_summary()` |
 | `route.py` | ルート木・ダイアグラム・分岐 | `build_branch_options()`, `show_status()`, `choose_next_route_with_status()` |
