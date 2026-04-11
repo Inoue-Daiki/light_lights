@@ -10,14 +10,6 @@ from config import (
     DODGE_MAX_CHANCE,
     DODGE_MIN_CHANCE,
     DODGE_SPEED_STEP,
-    ENEMY_SPEED_PER_FLOOR_DIVISOR,
-    ENEMY_ATTACK_PER_FLOOR,
-    ENEMY_DEFENSE_PER_FLOOR_DIVISOR,
-    ENEMY_GOLD_BASE,
-    ENEMY_GOLD_PER_FLOOR,
-    ENEMY_HP_PER_FLOOR,
-    ENEMY_SHARD_BASE,
-    ENEMY_SHARD_PER_FLOOR,
     ESCAPE_BASE_CHANCE,
     ESCAPE_MAX_CHANCE,
     ESCAPE_MIN_CHANCE,
@@ -26,17 +18,8 @@ from config import (
     MIN_DAMAGE,
     POTION_HEAL_AMOUNT,
 )
-from models import BattleReward, Enemy, EnemyTemplate, Hero, RunState
+from models import BattleReward, Enemy, Hero, RunState
 from ui import PromptChoice
-
-
-ENEMY_TEMPLATES = [
-    EnemyTemplate("Slime", 10, 6, 1, 4),
-    EnemyTemplate("Bandit", 14, 7, 2, 5),
-    EnemyTemplate("Skeleton", 18, 9, 3, 4),
-    EnemyTemplate("Wolf", 16, 10, 2, 7),
-    EnemyTemplate("Knight", 22, 11, 4, 3),
-]
 
 
 def clamp_damage(raw_damage: int) -> int:
@@ -46,25 +29,6 @@ def clamp_damage(raw_damage: int) -> int:
 def attack_damage(attack: int, defense: int) -> int:
     variance = random.randint(DAMAGE_VARIANCE_MIN, DAMAGE_VARIANCE_MAX)
     return clamp_damage(attack - defense + variance)
-
-
-def create_enemy(floor: int) -> Enemy:
-    template = random.choice(ENEMY_TEMPLATES)
-    hp = template.hp + floor * ENEMY_HP_PER_FLOOR
-    attack = template.attack + floor * ENEMY_ATTACK_PER_FLOOR
-    defense = template.defense + floor // ENEMY_DEFENSE_PER_FLOOR_DIVISOR
-    speed = template.speed + floor // ENEMY_SPEED_PER_FLOOR_DIVISOR
-    shard_reward = ENEMY_SHARD_BASE + floor * ENEMY_SHARD_PER_FLOOR
-    gold_reward = ENEMY_GOLD_BASE + floor * ENEMY_GOLD_PER_FLOOR
-    return Enemy(
-        name=template.name,
-        hp=hp,
-        attack=attack,
-        defense=defense,
-        speed=speed,
-        shard_reward=shard_reward,
-        gold_reward=gold_reward,
-    )
 
 
 def get_escape_chance(hero: Hero, enemy: Enemy) -> float:

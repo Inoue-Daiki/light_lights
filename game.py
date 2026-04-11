@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from battle import battle, create_enemy
+from battle import battle
+from enemies import create_enemy
 from config import CLEAR_BONUS_SHARDS, ROUTE_NAME, SECTION_LABEL, TOTAL_FLOORS
 from events import run_event
 from models import Hero, PermanentUpgrades, RunResult, RunState
