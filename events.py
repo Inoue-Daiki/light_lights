@@ -28,6 +28,10 @@ def grant_event_reward(hero: Hero, reward_kind: str, reward_amount: int) -> None
         hero.attack += reward_amount
         print(f"攻撃力が{reward_amount}上がった。")
         return
+    if reward_kind == "speed":
+        hero.speed += reward_amount
+        print(f"素早さが{reward_amount}上がった。")
+        return
     hero.defense += reward_amount
     print(f"防御力が{reward_amount}上がった。")
 
@@ -128,12 +132,19 @@ class PilgrimSpringEvent(PaidEvent):
     reward_kind = "heal"
 
 
+class WindPathEvent(PaidEvent):
+    name = "風読みの道標"
+    description = "旅路を読む者に対価を払えば、身のこなしを磨ける。"
+    reward_kind = "speed"
+
+
 FREE_EVENTS: list[FreeEvent] = [BonusHealEvent(), BonusGoldEvent()]
 PAID_EVENTS: list[PaidEvent] = [
     MerchantEvent(),
     ShrineEvent(),
     ForgeEvent(),
     PilgrimSpringEvent(),
+    WindPathEvent(),
 ]
 
 
@@ -153,6 +164,7 @@ def get_event_diagram_label(event: Event) -> str:
         "ShrineEvent": "祭",
         "ForgeEvent": "鍛",
         "PilgrimSpringEvent": "巡",
+        "WindPathEvent": "風",
     }
     return labels.get(event.__class__.__name__, event.name[:1])
 

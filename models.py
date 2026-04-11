@@ -10,6 +10,7 @@ class PermanentUpgrades:
     hp: int = 0
     attack: int = 0
     defense: int = 0
+    speed: int = 0
 
 
 @dataclass
@@ -24,6 +25,7 @@ class EnemyTemplate:
     hp: int
     attack: int
     defense: int
+    speed: int
 
 
 @dataclass(frozen=True)
@@ -60,6 +62,7 @@ class Hero:
     hp: int
     attack: int
     defense: int
+    speed: int
     potions: int = BASE_POTIONS
 
     def is_alive(self) -> bool:
@@ -82,6 +85,7 @@ class Enemy:
     hp: int
     attack: int
     defense: int
+    speed: int
     shard_reward: int
     gold_reward: int
 
