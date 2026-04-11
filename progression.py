@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from battle import battle, create_enemy
 from config import (
     ATTACK_PER_UPGRADE,
@@ -10,6 +12,9 @@ from config import (
     CLEAR_BONUS_SHARDS,
     DEFENSE_PER_UPGRADE,
     HP_PER_UPGRADE,
+    ROUTE_LABEL,
+    ROUTE_NAME,
+    SECTION_LABEL,
     SPEED_PER_UPGRADE,
     SHOP_UPGRADE_COST,
     TOTAL_FLOORS,
@@ -17,7 +22,18 @@ from config import (
 from events import Event, get_event_diagram_label, plan_event, run_event
 from models import Hero, PermanentUpgrades, RunState, ShopUpgrade
 from ui import PromptChoice, clear_screen, wait_for_enter
-FloorEventPlan = dict[int, Event | None]
+
+StagePlan = Event | None
+ClearedStagePlan = dict[int, StagePlan]
+
+
+@dataclass
+class RouteNode:
+    plan: StagePlan
+    next_routes: list["RouteNode"]
+
+
+BranchOptions = list[RouteNode]
 
 
 SHOP_UPGRADES = [
@@ -45,47 +61,129 @@ def get_upgrade_summary(upgrades: PermanentUpgrades) -> str:
     )
 
 
-def build_floor_event_plan() -> FloorEventPlan:
-    floor_events: FloorEventPlan = {1: None, TOTAL_FLOORS: None}
-    for floor in range(2, TOTAL_FLOORS):
-        floor_events[floor] = plan_event()
-    return floor_events
+def build_branch_options(floor: int) -> BranchOptions:
+    next_floor = floor + 1
+    if next_floor > TOTAL_FLOORS:
+        return []
+    if next_floor == TOTAL_FLOORS:
+        return [RouteNode(None, [])]
+    return [
+        RouteNode(plan_event(), build_branch_options(next_floor)),
+        RouteNode(plan_event(), build_branch_options(next_floor)),
+    ]
 
 
-def format_floor_diagram(current_floor: int, floor_events: FloorEventPlan) -> str:
-    nodes: list[str] = []
-    for floor in range(1, TOTAL_FLOORS + 1):
-        planned_event = floor_events.get(floor)
-        if planned_event is None:
-            marker = "X" if floor == TOTAL_FLOORS else "B"
-        else:
-            marker = get_event_diagram_label(planned_event)
-        if floor < current_floor:
-            nodes.append(f"[{floor}{marker}]")
-            continue
-        if floor == current_floor:
-            nodes.append(f"{{{floor}{marker}}}")
-            continue
-        nodes.append(f"<{floor}{marker}>")
-    return "-".join(nodes)
+def format_stage_marker(floor: int, plan: StagePlan, bracket: str) -> str:
+    if plan is None:
+        marker = "X" if floor == TOTAL_FLOORS else "B"
+    else:
+        marker = get_event_diagram_label(plan)
+    if bracket == "done":
+        return f"[{floor}{marker}]"
+    if bracket == "current":
+        return f"{{{floor}{marker}}}"
+    return f"<{floor}{marker}>"
+
+
+def format_future_options(floor: int, routes: BranchOptions) -> str:
+    if not routes:
+        return ""
+    next_floor = floor + 1
+    return " / ".join(
+        format_stage_marker(next_floor, route.plan, "future") for route in routes
+    )
+
+
+def format_floor_diagram(
+    current_floor: int,
+    current_plan: StagePlan,
+    cleared_plans: ClearedStagePlan,
+    next_options: BranchOptions,
+) -> list[str]:
+    resolved_nodes = [
+        format_stage_marker(floor, cleared_plans[floor], "done")
+        for floor in range(1, current_floor)
+    ]
+    resolved_nodes.append(format_stage_marker(current_floor, current_plan, "current"))
+    first_line = "-".join(resolved_nodes)
+
+    if not next_options:
+        return [first_line]
+
+    next_floor = current_floor + 1
+    if len(next_options) == 1:
+        only_route = next_options[0]
+        lines = [f"{first_line}-{format_stage_marker(next_floor, only_route.plan, 'future')}"]
+        future_preview = format_future_options(next_floor, only_route.next_routes)
+        if future_preview:
+            lines.append(f"      その先: {future_preview}")
+        return lines
+
+    first_route = next_options[0]
+    second_route = next_options[1]
+    return [
+        first_line,
+        f"次の{SECTION_LABEL}:",
+        f"      ┏1:{format_stage_marker(next_floor, first_route.plan, 'future')}",
+        f"      ┃  先: {format_future_options(next_floor, first_route.next_routes) or '-'}",
+        f"      ┗2:{format_stage_marker(next_floor, second_route.plan, 'future')}",
+        f"         先: {format_future_options(next_floor, second_route.next_routes) or '-'}",
+    ]
 
 
 def show_status(
     hero: Hero,
     run_state: RunState,
     floor: int,
-    floor_events: FloorEventPlan,
+    current_plan: StagePlan,
+    cleared_plans: ClearedStagePlan,
+    next_options: BranchOptions,
 ) -> None:
     print("-" * 44)
+    print(f"{ROUTE_LABEL}: {ROUTE_NAME}")
     print(
-        f"階層: {floor}/{TOTAL_FLOORS}  欠片: {run_state.soul_shards}  所持金: {run_state.gold}"
+        f"{SECTION_LABEL}: {floor}/{TOTAL_FLOORS}  欠片: {run_state.soul_shards}  所持金: {run_state.gold}"
     )
-    print(f"進行: {format_floor_diagram(floor, floor_events)}")
-    print("凡例: []踏破済み  {}現在  <>先の階層  泉回復  袋所持金  商薬  祭攻  鍛防  巡回  風速  B戦闘  X最終階")
+    diagram_lines = format_floor_diagram(floor, current_plan, cleared_plans, next_options)
+    print(f"進行: {diagram_lines[0]}")
+    for line in diagram_lines[1:]:
+        print(line)
+    print("凡例: []踏破済み  {}現在  <>先の区画  泉回復  袋所持金  商薬  祭攻  鍛防  巡回  風速  B戦闘  X終点")
+    if len(next_options) == 2:
+        print("分岐: 1 または 2 を選ぶ")
     print(
         f"主人公 HP {hero.hp}/{hero.max_hp}  攻撃力 {hero.attack}  防御力 {hero.defense}  素早さ {hero.speed}  回復薬 {hero.potions}"
     )
     print("-" * 44)
+
+
+def choose_next_route(next_options: BranchOptions, prompt_choice: PromptChoice) -> RouteNode | None:
+    if not next_options:
+        return None
+    if len(next_options) == 1:
+        return next_options[0]
+    choice = prompt_choice("次の分岐を選択 [1/2]: ", {"1", "2"})
+    selected_index = int(choice) - 1
+    print(f"分岐{choice}を選んだ。")
+    return next_options[selected_index]
+
+
+def choose_next_route_with_status(
+    hero: Hero,
+    run_state: RunState,
+    floor: int,
+    current_plan: StagePlan,
+    cleared_plans: ClearedStagePlan,
+    next_options: BranchOptions,
+    prompt_choice: PromptChoice,
+) -> RouteNode | None:
+    if not next_options:
+        return None
+    if len(next_options) == 1:
+        return next_options[0]
+    clear_screen()
+    show_status(hero, run_state, floor, current_plan, cleared_plans, next_options)
+    return choose_next_route(next_options, prompt_choice)
 
 
 def show_shop_status(
@@ -170,6 +268,7 @@ def reset_hero_status(hero: Hero, upgrades: PermanentUpgrades) -> None:
     hero.hp = base_hero.hp
     hero.attack = base_hero.attack
     hero.defense = base_hero.defense
+    hero.speed = base_hero.speed
     hero.potions = base_hero.potions
 
 
@@ -202,7 +301,7 @@ def _handle_battle_floor(
         reset_permanent_upgrades(upgrades)
         reset_hero_status(hero, upgrades)
         print(
-            f"主人公は力尽きた。到達階層は {floor}/{TOTAL_FLOORS}。恒久強化を含むステータスをリセットした。"
+            f"主人公は力尽きた。到達{SECTION_LABEL}は {floor}/{TOTAL_FLOORS}。{ROUTE_NAME}で得た恒久強化を含むステータスをリセットした。"
         )
         wait_for_enter()
         return False
@@ -217,23 +316,46 @@ def run_once(
 ) -> tuple[bool, int]:
     hero = build_hero(upgrades)
     run_state = RunState(soul_shards=soul_shards)
-    floor_events = build_floor_event_plan()
+    cleared_plans: ClearedStagePlan = {}
+    current_route: RouteNode | None = RouteNode(None, build_branch_options(1))
 
     print("\n探索開始")
     for floor in range(1, TOTAL_FLOORS + 1):
+        if current_route is None:
+            break
+        next_options = current_route.next_routes
         clear_screen()
-        show_status(hero, run_state, floor, floor_events)
+        show_status(hero, run_state, floor, current_route.plan, cleared_plans, next_options)
         wait_for_enter()
 
-        planned_event = floor_events.get(floor)
-        if planned_event is not None:
-            run_event(planned_event, hero, run_state, prompt_choice)
+        if current_route.plan is not None:
+            run_event(current_route.plan, hero, run_state, prompt_choice)
             wait_for_enter()
+            cleared_plans[floor] = current_route.plan
+            current_route = choose_next_route_with_status(
+                hero,
+                run_state,
+                floor,
+                current_route.plan,
+                cleared_plans,
+                next_options,
+                prompt_choice,
+            )
             continue
 
         result = _handle_battle_floor(floor, hero, run_state, upgrades, prompt_choice)
         if result is not None:
             return result, run_state.soul_shards
+        cleared_plans[floor] = current_route.plan
+        current_route = choose_next_route_with_status(
+            hero,
+            run_state,
+            floor,
+            current_route.plan,
+            cleared_plans,
+            next_options,
+            prompt_choice,
+        )
 
     print("最深部を突破した。探索成功。")
     run_state.soul_shards += CLEAR_BONUS_SHARDS

@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-# ── 階層 ──
+# ── 灯路・区画 ──
+ROUTE_LABEL = "灯路"
+ROUTE_NAME = "薄明の回廊"
+SECTION_LABEL = "区画"
 TOTAL_FLOORS = 8
 
 # ── 主人公の基礎ステータス ──
