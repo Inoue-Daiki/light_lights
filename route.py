@@ -121,8 +121,6 @@ def show_status(
         "凡例: []踏破済み  {}現在  <>先の区画  "
         "泉回復  袋所持金  商薬  祭攻  鍛防  巡回  風速  B戦闘  X終点"
     )
-    if len(next_options) == 2:
-        print("分岐: 1 または 2 を選ぶ")
     print(
         f"主人公 HP {hero.hp}/{hero.max_hp}  攻撃力 {hero.attack}  "
         f"防御力 {hero.defense}  素早さ {hero.speed}  回復薬 {hero.potions}"

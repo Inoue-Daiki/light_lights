@@ -113,7 +113,7 @@ def _show_battle_status(hero: Hero, enemy: Enemy) -> None:
     enemy_dodge = int(get_dodge_chance(hero.speed, enemy.speed) * 100)
     first_actor = "あなた" if hero.speed >= enemy.speed else enemy.name
     print(
-        f"あなた HP {hero.hp}/{hero.max_hp}  素早さ {hero.speed} | "
+        f"あなた HP {hero.hp}/{hero.max_hp}  素早さ {hero.speed}  回復薬 {hero.potions} | "
         f"{enemy.name} HP {enemy.hp}  素早さ {enemy.speed}"
     )
     print(

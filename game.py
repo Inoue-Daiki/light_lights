@@ -65,11 +65,16 @@ def _advance_route(
 ) -> RouteNode | None:
     """現在階を踏破済みに記録し、次の分岐を選択して返す。"""
     cleared_plans[floor] = current_route.plan
-    return choose_next_route_with_status(
+    next_route = choose_next_route_with_status(
         hero, run_state, floor,
         current_route.plan, cleared_plans,
         current_route.next_routes, prompt_choice,
     )
+    if next_route is not None:
+        next_floor = floor + 1
+        print(f"{next_floor}{SECTION_LABEL}に進んだ。")
+        wait_for_enter()
+    return next_route
 
 
 def run_once(
