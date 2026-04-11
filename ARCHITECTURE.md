@@ -104,28 +104,19 @@ main.py            game, models, shop, ui
 ## 拡張ガイド
 
 ### 新しい敵を追加する
-`battle.py` の `ENEMY_TEMPLATES` にテンプレートを追加。
+`enemies.py` の `ENEMY_TEMPLATES` にエントリを追加。
 
 ### ゲームバランスを調整する
 `config.py` の該当定数を変更。コード変更は不要。
 
 ### 新しいイベントを追加する
-1. `events.py` で `FreeEvent` または `PaidEvent` を継承したクラスを作成
-2. `diagram_label` クラス属性を設定
-3. `FREE_EVENTS` または `PAID_EVENTS` リストに追加
+1. `events.py` の `FREE_EVENT_TEMPLATES` または `PAID_EVENT_TEMPLATES` にエントリを追加する
+2. 無料イベントは `FreeEventTemplate`、有料イベントは `PaidEventTemplate` を使用する
 
 ### ボス戦を追加する
 1. `config.py` にボス関連定数を追加
 2. `battle.py` に `create_boss()` を追加
 3. `game.py` の階層ループで最終階をボス戦に分岐
-
-### セーブ機能を追加する
-`PermanentUpgrades` と `soul_shards` を JSON でシリアライズする
-`save.py` モジュールを新設し、`main.py` から呼び出す。
-### ボス戦を追加する
-1. `config.py` にボス関連定数を追加
-2. `battle.py` に `create_boss()` を追加
-3. `progression.py` の階層ループで最終階をボス戦に分岐
 
 ### セーブ機能を追加する
 `PermanentUpgrades` と `soul_shards` を JSON でシリアライズする

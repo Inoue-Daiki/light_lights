@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 from battle import battle
 from enemies import create_enemy
 from config import CLEAR_BONUS_SHARDS, ROUTE_NAME, SECTION_LABEL, TOTAL_FLOORS
@@ -24,7 +26,7 @@ def _handle_battle_floor(
     run_state: RunState,
     upgrades: PermanentUpgrades,
     prompt_choice: PromptChoice,
-) -> bool | None:
+) -> Literal[False] | None:
     """戦闘階の処理。死亡時 False、継続時 None を返す。"""
     enemy = create_enemy(floor)
     reward = battle(hero, enemy, run_state, prompt_choice)

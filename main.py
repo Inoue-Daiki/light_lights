@@ -3,15 +3,7 @@ from __future__ import annotations
 from game import run_once
 from models import PermanentUpgrades
 from shop import get_upgrade_summary, shop_phase
-from ui import wait_for_enter
-
-
-def prompt_choice(prompt: str, options: set[str]) -> str:
-    while True:
-        answer = input(prompt).strip().lower()
-        if answer in options:
-            return answer
-        print("入力が不正です。もう一度入力してください。")
+from ui import prompt_choice, wait_for_enter
 
 
 def show_title() -> None:

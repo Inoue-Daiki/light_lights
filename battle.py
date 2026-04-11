@@ -19,7 +19,7 @@ from config import (
     POTION_HEAL_AMOUNT,
 )
 from models import BattleReward, Enemy, Hero, RunState
-from ui import PromptChoice
+from ui import PromptChoice, clear_screen
 
 
 def clamp_damage(raw_damage: int) -> int:
@@ -138,6 +138,7 @@ def battle(
     run_state: RunState,
     prompt_choice: PromptChoice,
 ) -> BattleReward:
+    clear_screen()
     print(f"\n敵が現れた: {enemy.name}")
 
     while hero.is_alive() and enemy.is_alive():
@@ -159,8 +160,8 @@ def battle(
                 use_potion(hero)
             else:
                 perform_hero_attack(hero, enemy)
-            if not enemy.is_alive():
-                return _victory_reward(enemy)
+                if not enemy.is_alive():
+                    return _victory_reward(enemy)
             perform_enemy_attack(hero, enemy)
         else:
             perform_enemy_attack(hero, enemy)

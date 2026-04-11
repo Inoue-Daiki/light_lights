@@ -17,3 +17,11 @@ def clear_screen() -> None:
 def wait_for_enter() -> None:
     input("\nエンターキーで続行")
     clear_screen()
+
+
+def prompt_choice(prompt: str, options: set[str]) -> str:
+    while True:
+        answer = input(prompt).strip().lower()
+        if answer in options:
+            return answer
+        print("入力が不正です。もう一度入力してください。")
