@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from game import run_once
 from models import PermanentUpgrades
-from progression import get_upgrade_summary, run_once
-from ui import PromptChoice, wait_for_enter
+from shop import get_upgrade_summary
+from ui import wait_for_enter
 
 
 def prompt_choice(prompt: str, options: set[str]) -> str:
@@ -45,9 +46,10 @@ def main() -> None:
             wait_for_enter()
             continue
 
-        won, soul_shards = run_once(upgrades, soul_shards, prompt_choice)
+        result = run_once(upgrades, soul_shards, prompt_choice)
+        soul_shards = result.soul_shards
         print(f"現在の累計欠片は {soul_shards}。")
-        if won:
+        if result.won:
             print("次の探索ではさらに奥を目指せる。")
 
 

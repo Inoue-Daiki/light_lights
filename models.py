@@ -91,3 +91,9 @@ class Enemy:
 
     def is_alive(self) -> bool:
         return self.hp > 0
+
+
+@dataclass(frozen=True)
+class RunResult:
+    won: bool
+    soul_shards: int

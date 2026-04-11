@@ -42,11 +42,13 @@ python main.py
 
 ## コード構成
 
-- [main.py](main.py): 起動とメインメニュー
+- [main.py](main.py): エントリポイント・メインメニュー
 - [config.py](config.py): ゲームバランス定数の一元管理
-- [battle.py](battle.py): 敵生成と戦闘処理
-- [events.py](events.py): Event クラス群とイベント発火
-- [progression.py](progression.py): 探索進行とショップ処理
-- [models.py](models.py): 共通データ構造
-- [ui.py](ui.py): 画面制御・入力ユーティリティ・共通型
+- [models.py](models.py): 純粋データ構造（Hero, Enemy, RunResult など）
+- [ui.py](ui.py): 画面制御・入力ユーティリティ・PromptChoice 型
+- [battle.py](battle.py): 敵生成・ターン制戦闘エンジン
+- [events.py](events.py): イベントクラス群とイベント発火
+- [shop.py](shop.py): ショップ・恒久強化・主人公構築
+- [route.py](route.py): ルート木の生成・ダイアグラム表示・分岐選択
+- [game.py](game.py): 1ランの探索オーケストレーション
 - [ARCHITECTURE.md](ARCHITECTURE.md): アーキテクチャドキュメント

@@ -15,7 +15,7 @@ RISK_OPTIONS = [
 ]
 
 
-def grant_event_reward(hero: Hero, reward_kind: str, reward_amount: int) -> None:
+def _grant_reward(hero: Hero, reward_kind: str, reward_amount: int) -> None:
     if reward_kind == "heal":
         healed = hero.heal(reward_amount)
         print(f"HPが{healed}回復した。")
@@ -36,8 +36,12 @@ def grant_event_reward(hero: Hero, reward_kind: str, reward_amount: int) -> None
     print(f"防御力が{reward_amount}上がった。")
 
 
+# ── イベント基底 ──
+
+
 class Event(ABC):
     name: str
+    diagram_label: str
 
     @abstractmethod
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
@@ -48,8 +52,12 @@ class FreeEvent(Event):
     pass
 
 
+# ── 無料イベント ──
+
+
 class BonusHealEvent(FreeEvent):
     name = "小さな幸運"
+    diagram_label = "泉"
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
         clear_screen()
@@ -61,6 +69,7 @@ class BonusHealEvent(FreeEvent):
 
 class BonusGoldEvent(FreeEvent):
     name = "小さな幸運"
+    diagram_label = "袋"
 
     def trigger(self, hero: Hero, run_state: RunState, prompt_choice: PromptChoice) -> None:
         clear_screen()
@@ -68,6 +77,9 @@ class BonusGoldEvent(FreeEvent):
         gold_amount = random.randint(8, 16)
         run_state.gold += gold_amount
         print(f"落し物の袋を見つけた。所持金を{gold_amount}獲得した。")
+
+
+# ── 有料イベント ──
 
 
 class PaidEvent(Event, ABC):
@@ -81,14 +93,14 @@ class PaidEvent(Event, ABC):
         print("1: 低リスク  2: 中リスク  3: 高リスク  4: 見送る")
         print("高リスクほど報酬量は増えるが、失敗して支払いだけ失う確率が上がる。")
 
-        valid_choices = {option.key for option in RISK_OPTIONS} | {"4"}
+        valid_choices = {opt.key for opt in RISK_OPTIONS} | {"4"}
         while True:
             choice = prompt_choice("選択: ", valid_choices)
             if choice == "4":
                 print("イベントを見送った。")
                 return
 
-            option = next(option for option in RISK_OPTIONS if option.key == choice)
+            option = next(opt for opt in RISK_OPTIONS if opt.key == choice)
             if run_state.gold < option.cost:
                 print("所持金が足りない。別の選択をしてください。")
                 continue
@@ -96,44 +108,49 @@ class PaidEvent(Event, ABC):
             run_state.gold -= option.cost
             print(f"{option.label}リスクに挑戦。所持金を{option.cost}支払った。")
             if random.random() <= option.success_rate:
-                reward_amount = self.resolve_reward_amount(option.amount)
-                grant_event_reward(hero, self.reward_kind, reward_amount)
+                amount = self._resolve_reward_amount(option.amount)
+                _grant_reward(hero, self.reward_kind, amount)
             else:
                 print("失敗した。支払った所持金だけを失った。")
             return
 
-    def resolve_reward_amount(self, base_amount: int) -> int:
+    def _resolve_reward_amount(self, base: int) -> int:
         if self.reward_kind == "heal":
-            return base_amount * 4
-        return base_amount
+            return base * 4
+        return base
 
 
 class MerchantEvent(PaidEvent):
     name = "行商人"
+    diagram_label = "商"
     description = "代金を払えば回復薬を分けてもらえる。"
     reward_kind = "potion"
 
 
 class ShrineEvent(PaidEvent):
     name = "怪しい祭壇"
+    diagram_label = "祭"
     description = "供物を捧げれば力を得られるかもしれない。"
     reward_kind = "attack"
 
 
 class ForgeEvent(PaidEvent):
     name = "鉄壁の鍛冶台"
+    diagram_label = "鍛"
     description = "資材を払えば防具を鍛えられる。"
     reward_kind = "defense"
 
 
 class PilgrimSpringEvent(PaidEvent):
     name = "巡礼の泉"
+    diagram_label = "巡"
     description = "硬貨を投げれば癒やしが返ってくることがある。"
     reward_kind = "heal"
 
 
 class WindPathEvent(PaidEvent):
     name = "風読みの道標"
+    diagram_label = "風"
     description = "旅路を読む者に対価を払えば、身のこなしを磨ける。"
     reward_kind = "speed"
 
@@ -148,25 +165,15 @@ PAID_EVENTS: list[PaidEvent] = [
 ]
 
 
+# ── 公開API ──
+
+
 def plan_event() -> Event | None:
     if random.random() >= EVENT_TRIGGER_CHANCE:
         return None
     if random.random() < FREE_EVENT_CHANCE:
         return random.choice(FREE_EVENTS)
     return random.choice(PAID_EVENTS)
-
-
-def get_event_diagram_label(event: Event) -> str:
-    labels = {
-        "BonusHealEvent": "泉",
-        "BonusGoldEvent": "袋",
-        "MerchantEvent": "商",
-        "ShrineEvent": "祭",
-        "ForgeEvent": "鍛",
-        "PilgrimSpringEvent": "巡",
-        "WindPathEvent": "風",
-    }
-    return labels.get(event.__class__.__name__, event.name[:1])
 
 
 def run_event(
