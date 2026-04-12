@@ -17,3 +17,4 @@
 ・敵が出るときなぜかclearされない
 ・区画数の変動
 ・shop.py → skillup.pyなどにリネーム
+・ui分離
