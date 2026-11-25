@@ -1,0 +1,108 @@
+{
+  "free": [
+    {
+      "name": "小さな幸運",
+      "diagram_label": "泉",
+      "flavor_text": "澄んだ泉を見つけた。",
+      "reward_kind": "heal",
+      "min_amount": 6,
+      "max_amount": 12
+    },
+    {
+      "name": "小さな幸運",
+      "diagram_label": "袋",
+      "flavor_text": "落し物の袋を見つけた。",
+      "reward_kind": "gold",
+      "min_amount": 8,
+      "max_amount": 16
+    }
+  ],
+  "paid": [
+    {
+      "name": "行商人",
+      "diagram_label": "商",
+      "description": "代金を払えば回復薬を分けてもらえる。",
+      "reward_kind": "potion"
+    },
+    {
+      "name": "怪しい祭壇",
+      "diagram_label": "祭",
+      "description": "供物を捧げれば力を得られるかもしれない。",
+      "reward_kind": "attack"
+    },
+    {
+      "name": "鉄壁の鍛冶台",
+      "diagram_label": "鍛",
+      "description": "資材を払えば防具を鍛えられる。",
+      "reward_kind": "defense"
+    },
+    {
+      "name": "巡礼の泉",
+      "diagram_label": "巡",
+      "description": "硬貨を投げれば癒やしが返ってくることがある。",
+      "reward_kind": "heal"
+    },
+    {
+      "name": "風読みの道標",
+      "diagram_label": "風",
+      "description": "旅路を読む者に対価を払えば、身のこなしを磨ける。",
+      "reward_kind": "speed"
+    }
+  ],
+  "choices": [
+    {
+      "name": "忘れられた祠",
+      "description": "森の奥に古い石造りの祠がある。",
+      "options": [
+        {
+          "label": "祠に触れる",
+          "cost": 0,
+          "damage": 5,
+          "reward": "attack",
+          "amount": 2
+        },
+        {
+          "label": "10Gを供える",
+          "cost": 10,
+          "damage": 0,
+          "reward": "heal",
+          "amount": 15
+        },
+        {
+          "label": "立ち去る",
+          "cost": 0,
+          "damage": 0,
+          "reward": "gold",
+          "amount": 0
+        }
+      ]
+    },
+    {
+      "name": "旅人の荷物",
+      "description": "道端に荷物が落ちている。",
+      "options": [
+        {
+          "label": "荷物を調べる",
+          "cost": 0,
+          "damage": 3,
+          "reward": "gold",
+          "amount": 12
+        },
+        {
+          "label": "薬草を拾う",
+          "cost": 0,
+          "damage": 0,
+          "reward": "potion",
+          "amount": 1
+        },
+        {
+          "label": "立ち去る",
+          "cost": 0,
+          "damage": 0,
+          "reward": "gold",
+          "amount": 0
+        }
+      ]
+    }
+  ]
+}

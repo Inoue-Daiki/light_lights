@@ -1,6 +1,6 @@
 """敵テンプレート定義と敵生成ロジック。
 
-新しい敵を追加するには ENEMY_TEMPLATES にエントリを追加するだけでよい。
+新しい敵を追加するには content/enemies.json にエントリを追加するだけでよい。
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ from config import (
     ENEMY_SPEED_PER_FLOOR_DIVISOR,
 )
 from models import Enemy
+from content_data import load_content
 
 
 @dataclass(frozen=True)
@@ -51,11 +52,7 @@ class EnemyTemplate:
 # ── 敵テンプレート一覧 ──
 # 新しい敵を追加するにはここにエントリを追加する。
 ENEMY_TEMPLATES: list[EnemyTemplate] = [
-    EnemyTemplate("Slime",    hp=10, attack= 6, defense=1, speed=4),
-    EnemyTemplate("Bandit",   hp=14, attack= 7, defense=2, speed=5),
-    EnemyTemplate("Skeleton", hp=18, attack= 9, defense=3, speed=4),
-    EnemyTemplate("Wolf",     hp=16, attack=10, defense=2, speed=7),
-    EnemyTemplate("Knight",   hp=22, attack=11, defense=4, speed=3),
+    EnemyTemplate(**entry) for entry in load_content("enemies.json")
 ]
 
 

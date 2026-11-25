@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from config import EVENT_TRIGGER_CHANCE, FREE_EVENT_CHANCE
 from models import EventOption, Hero, RunState
+from content_data import load_content
 from ui import PromptChoice, clear_screen
 
 
@@ -127,17 +128,12 @@ class PaidEventTemplate(Event):
 # ── イベント一覧 ──
 # 新しいイベントを追加するにはここにエントリを追加するだけでよい。
 
+_DATA = load_content("events.json")
 FREE_EVENT_TEMPLATES: list[FreeEventTemplate] = [
-    FreeEventTemplate("小さな幸運", "泉", "澄んだ泉を見つけた。",     "heal", 6, 12),
-    FreeEventTemplate("小さな幸運", "袋", "落し物の袋を見つけた。",   "gold", 8, 16),
+    FreeEventTemplate(**entry) for entry in _DATA["free"]
 ]
-
 PAID_EVENT_TEMPLATES: list[PaidEventTemplate] = [
-    PaidEventTemplate("行商人",       "商", "代金を払えば回復薬を分けてもらえる。",             "potion"),
-    PaidEventTemplate("怪しい祭壇",   "祭", "供物を捧げれば力を得られるかもしれない。",         "attack"),
-    PaidEventTemplate("鉄壁の鍛冶台", "鍛", "資材を払えば防具を鍛えられる。",                   "defense"),
-    PaidEventTemplate("巡礼の泉",     "巡", "硬貨を投げれば癒やしが返ってくることがある。",     "heal"),
-    PaidEventTemplate("風読みの道標", "風", "旅路を読む者に対価を払えば、身のこなしを磨ける。", "speed"),
+    PaidEventTemplate(**entry) for entry in _DATA["paid"]
 ]
 
 

@@ -1,0 +1,30 @@
+{
+  "potion": {
+    "name": "回復薬",
+    "heal": 10,
+    "price": 8
+  },
+  "relics": [
+    {
+      "id": "iron_ring",
+      "name": "鉄の指輪",
+      "description": "防御力+2",
+      "stat": "defense",
+      "amount": 2
+    },
+    {
+      "id": "wind_charm",
+      "name": "風のお守り",
+      "description": "素早さ+2",
+      "stat": "speed",
+      "amount": 2
+    },
+    {
+      "id": "old_blade",
+      "name": "古い刃",
+      "description": "攻撃力+2",
+      "stat": "attack",
+      "amount": 2
+    }
+  ]
+}
