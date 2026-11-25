@@ -53,3 +53,45 @@ python main.py
 - [route.py](route.py): ルート木の生成・ダイアグラム表示・分岐選択
 - [game.py](game.py): 1ランの探索オーケストレーション
 - [ARCHITECTURE.md](ARCHITECTURE.md): アーキテクチャドキュメント
+
+## v0.2: サーバー／クライアント版（試験実装）
+
+Python 3.10 以上、外部パッケージ不要。旧版の `python main.py` は引き続き利用できます。
+
+端末1:
+```bash
+python server.py --seed 42
+```
+端末2:
+```bash
+python client.py
+```
+
+8区画・合流型分岐マップ、戦闘/強敵/遭遇/休息/宝箱/商人/ボス、敵行動予告、防御、回復薬、レリック、恒久強化、履歴に対応。レリックはラン内の能力補正。死亡時は旧仕様通り恒久強化を失います。状態異常・装備シナジー・隠しボス・永続セーブは未実装です。
+
+### AI 操作用 JSON API
+
+サーバーは 127.0.0.1:8765 にバインドする単一セッション・メモリ内ゲームです。インターネット公開用ではありません。
+
+- GET /state: 状態、マップ、行動候補、revision
+- GET /actions: 行動候補
+- GET /history: 現在のランの行動履歴
+- POST /action: {"action":"go:1-0","revision":1} （revision と action は直前の状態から取得）
+- POST /new: {"seed":42,"revision":123} （終了したランのみ。seed は省略可能、revision は最新値）
+
+POST は Content-Type: application/json 必須。無効な行動や古い revision は 400 を返します。人間と AI は同じ API とルールを使用します。ChatGPT から直接呼ぶための公開 MCP 接続は別途必要です。
+
+### データの追加
+
+- content/enemies.json: 敵名と基礎能力値（旧版と共通）
+- content/events.json: 無料／有料イベント（旧版と共通）と新版の選択式イベント
+- content/items.json: 新版の回復薬とレリック定義
+
+### ベースライン比較・テスト
+
+```bash
+python agents.py --runs 50 --seed 42
+python -m unittest discover -s tests -v
+```
+
+4種類のルールベース方策が同じシード集合で攻略します。LLM の接続やゲームバランスの調整は今後の課題です。マップは同一 seed で再現されますが、選択が異なると戦闘中の乱数消費は異なります。

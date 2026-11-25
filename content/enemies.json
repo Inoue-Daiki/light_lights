@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Slime",
+    "hp": 10,
+    "attack": 6,
+    "defense": 1,
+    "speed": 4
+  },
+  {
+    "name": "Bandit",
+    "hp": 14,
+    "attack": 7,
+    "defense": 2,
+    "speed": 5
+  },
+  {
+    "name": "Skeleton",
+    "hp": 18,
+    "attack": 9,
+    "defense": 3,
+    "speed": 4
+  },
+  {
+    "name": "Wolf",
+    "hp": 16,
+    "attack": 10,
+    "defense": 2,
+    "speed": 7
+  },
+  {
+    "name": "Knight",
+    "hp": 22,
+    "attack": 11,
+    "defense": 4,
+    "speed": 3
+  }
+]
