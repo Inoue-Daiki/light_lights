@@ -16,8 +16,8 @@ from config import (
     ESCAPE_PENALTY_RATE,
     ESCAPE_SPEED_STEP,
     MIN_DAMAGE,
-    POTION_HEAL_AMOUNT,
 )
+from items import ITEMS
 from models import BattleReward, Enemy, Hero, RunState
 from ui import PromptChoice, clear_screen
 
@@ -43,14 +43,23 @@ def get_dodge_chance(attacker_speed: int, defender_speed: int) -> float:
     return max(DODGE_MIN_CHANCE, min(DODGE_MAX_CHANCE, chance))
 
 
-def use_potion(hero: Hero) -> bool:
-    if hero.potions <= 0:
-        print("回復薬がありません。")
-        return False
-    hero.potions -= 1
-    healed = hero.heal(POTION_HEAL_AMOUNT)
-    print(f"回復薬を使ってHPを{healed}回復した。")
-    return True
+def choose_item(hero: Hero, prompt: PromptChoice) -> str | None:
+    keys = [key for key, count in hero.bag.items() if count > 0]
+    if not keys:
+        print("かばんは空だ。")
+        return None
+    for i, key in enumerate(keys, 1):
+        item = ITEMS[key]
+        print(f"{i}. {item.name} ×{hero.bag[key]}　HP+{item.heal}　{item.description}")
+    choice = prompt("使う道具は？（0で戻る） ", {"0"} | {str(i) for i in range(1, len(keys) + 1)})
+    return None if choice == "0" else keys[int(choice) - 1]
+
+
+def use_item(hero: Hero, key: str) -> None:
+    item = ITEMS[key]
+    hero.bag[key] -= 1
+    healed = hero.heal(item.heal)
+    print(f"{item.name}を使った。HPが{healed}回復した。")
 
 
 def perform_hero_attack(hero: Hero, enemy: Enemy) -> None:
@@ -75,7 +84,7 @@ def apply_escape_penalty(run_state: RunState) -> None:
     penalty_targets: list[tuple[str, int]] = []
     if run_state.soul_shards > 0:
         penalty_targets.append(
-            ("欠片", max(1, math.ceil(run_state.soul_shards * ESCAPE_PENALTY_RATE)))
+            ("経験点", max(1, math.ceil(run_state.soul_shards * ESCAPE_PENALTY_RATE)))
         )
     if run_state.gold > 0:
         penalty_targets.append(
@@ -87,7 +96,7 @@ def apply_escape_penalty(run_state: RunState) -> None:
         return
 
     resource_name, amount = random.choice(penalty_targets)
-    if resource_name == "欠片":
+    if resource_name == "経験点":
         lost = min(run_state.soul_shards, amount)
         run_state.soul_shards -= lost
     else:
@@ -113,7 +122,7 @@ def _show_battle_status(hero: Hero, enemy: Enemy) -> None:
     enemy_dodge = int(get_dodge_chance(hero.speed, enemy.speed) * 100)
     first_actor = "あなた" if hero.speed >= enemy.speed else enemy.name
     print(
-        f"あなた HP {hero.hp}/{hero.max_hp}  素早さ {hero.speed}  回復薬 {hero.potions} | "
+        f"あなた HP {hero.hp}/{hero.max_hp}  素早さ {hero.speed}  道具 {sum(hero.bag.values())} | "
         f"{enemy.name} HP {enemy.hp}  素早さ {enemy.speed}"
     )
     print(
@@ -124,7 +133,7 @@ def _show_battle_status(hero: Hero, enemy: Enemy) -> None:
 
 def _victory_reward(enemy: Enemy) -> BattleReward:
     print(
-        f"{enemy.name}を倒した。欠片を{enemy.shard_reward}、所持金を{enemy.gold_reward}獲得。"
+        f"{enemy.name}を倒した。経験点を{enemy.shard_reward}、所持金を{enemy.gold_reward}獲得。"
     )
     return BattleReward(enemy.shard_reward, enemy.gold_reward)
 
@@ -141,9 +150,12 @@ def battle(
     clear_screen()
     print(f"\n敵が現れた: {enemy.name}")
 
+    if enemy.greeting:
+        print(enemy.greeting)
+
     while hero.is_alive() and enemy.is_alive():
         _show_battle_status(hero, enemy)
-        action = prompt_choice("行動を選択 [a]攻撃 [h]回復 [r]逃走: ", {"a", "h", "r"})
+        action = prompt_choice("行動を選択 [a]攻撃 [h]道具 [r]逃走: ", {"a", "h", "r"})
 
         if action == "r":
             if try_escape(hero, enemy, run_state):
@@ -151,13 +163,13 @@ def battle(
             perform_enemy_attack(hero, enemy)
             continue
 
-        if action == "h" and hero.potions <= 0:
-            print("回復薬がありません。")
+        item = choose_item(hero, prompt_choice) if action == "h" else None
+        if action == "h" and item is None:
             continue
 
         if hero.speed >= enemy.speed:
-            if action == "h":
-                use_potion(hero)
+            if item is not None:
+                use_item(hero, item)
             else:
                 perform_hero_attack(hero, enemy)
                 if not enemy.is_alive():
@@ -167,8 +179,8 @@ def battle(
             perform_enemy_attack(hero, enemy)
             if not hero.is_alive():
                 break
-            if action == "h":
-                use_potion(hero)
+            if item is not None:
+                use_item(hero, item)
             else:
                 perform_hero_attack(hero, enemy)
                 if not enemy.is_alive():

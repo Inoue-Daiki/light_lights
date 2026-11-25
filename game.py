@@ -9,13 +9,7 @@ from enemies import create_enemy
 from config import CLEAR_BONUS_SHARDS, ROUTE_NAME, SECTION_LABEL, TOTAL_FLOORS
 from events import run_event
 from models import Hero, PermanentUpgrades, RunResult, RunState
-from route import (
-    ClearedStagePlan,
-    RouteNode,
-    build_branch_options,
-    choose_next_route_with_status,
-    show_status,
-)
+from route import build_map, choose_next, show_map
 from shop import build_hero, reset_upgrades, shop_phase
 from ui import PromptChoice, clear_screen, wait_for_enter
 
@@ -39,7 +33,7 @@ def _handle_battle_floor(
         return None
 
     if reward.soul_shards > 0:
-        print("戦闘終了。恒久強化を選択できる。")
+        print("戦闘終了。能力強化を選択できる。")
         wait_for_enter()
         run_state.soul_shards = shop_phase(
             upgrades, run_state.soul_shards, prompt_choice, hero,
@@ -49,34 +43,12 @@ def _handle_battle_floor(
         reset_upgrades(upgrades)
         print(
             f"主人公は力尽きた。到達{SECTION_LABEL}は {floor}/{TOTAL_FLOORS}。"
-            f"{ROUTE_NAME}で得た恒久強化を含むステータスをリセットした。"
+            f"{ROUTE_NAME}で得た能力強化を含むステータスをリセットした。"
         )
         wait_for_enter()
         return False
 
     return None
-
-
-def _advance_route(
-    hero: Hero,
-    run_state: RunState,
-    floor: int,
-    current_route: RouteNode,
-    cleared_plans: ClearedStagePlan,
-    prompt_choice: PromptChoice,
-) -> RouteNode | None:
-    """現在階を踏破済みに記録し、次の分岐を選択して返す。"""
-    cleared_plans[floor] = current_route.plan
-    next_route = choose_next_route_with_status(
-        hero, run_state, floor,
-        current_route.plan, cleared_plans,
-        current_route.next_routes, prompt_choice,
-    )
-    if next_route is not None:
-        next_floor = floor + 1
-        print(f"{next_floor}{SECTION_LABEL}に進んだ。")
-        wait_for_enter()
-    return next_route
 
 
 def run_once(
@@ -86,41 +58,29 @@ def run_once(
 ) -> RunResult:
     hero = build_hero(upgrades)
     run_state = RunState(soul_shards=soul_shards)
-    cleared_plans: ClearedStagePlan = {}
-    current_route: RouteNode | None = RouteNode(None, build_branch_options(1))
-
-    print("\n探索開始")
-    for floor in range(1, TOTAL_FLOORS + 1):
-        if current_route is None:
-            break
-
+    rows = build_map(TOTAL_FLOORS)
+    path = [rows[0][0]]
+    for floor in range(1, len(rows) + 1):
+        node = path[-1]
         clear_screen()
-        show_status(
-            hero, run_state, floor,
-            current_route.plan, cleared_plans, current_route.next_routes,
-        )
+        show_map(rows, path)
+        print(f"{ROUTE_NAME}・{floor}区目　HP {hero.hp}/{hero.max_hp}　所持金 {run_state.gold}")
         wait_for_enter()
-
-        # イベント階
-        if current_route.plan is not None:
-            run_event(current_route.plan, hero, run_state, prompt_choice)
+        if node.event:
+            run_event(node.event, hero, run_state, prompt_choice)
             wait_for_enter()
-            current_route = _advance_route(
-                hero, run_state, floor, current_route, cleared_plans, prompt_choice,
-            )
-            continue
+        else:
+            result = _handle_battle_floor(floor, hero, run_state, upgrades, prompt_choice)
+            if result is not None:
+                return RunResult(won=result, soul_shards=run_state.soul_shards)
+        if floor < len(rows):
+            clear_screen()
+            show_map(rows, path)
+            print(f"HP {hero.hp}/{hero.max_hp}　所持金 {run_state.gold}")
+            path.append(choose_next(node, rows[floor], prompt_choice))
 
-        # 戦闘階
-        result = _handle_battle_floor(floor, hero, run_state, upgrades, prompt_choice)
-        if result is not None:
-            return RunResult(won=result, soul_shards=run_state.soul_shards)
-
-        current_route = _advance_route(
-            hero, run_state, floor, current_route, cleared_plans, prompt_choice,
-        )
-
-    print("最深部を突破した。探索成功。")
+    print("町の門をくぐった。頼まれた手紙を届けよう。")
     run_state.soul_shards += CLEAR_BONUS_SHARDS
-    print(f"踏破報酬として欠片を{CLEAR_BONUS_SHARDS}獲得。")
+    print(f"踏破報酬として経験点を{CLEAR_BONUS_SHARDS}獲得。")
     wait_for_enter()
     return RunResult(won=True, soul_shards=run_state.soul_shards)

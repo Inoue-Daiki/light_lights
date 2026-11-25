@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from config import BASE_POTIONS
+from items import starting_bag
 
 
 @dataclass
@@ -20,7 +20,7 @@ class Hero:
     attack: int
     defense: int
     speed: int
-    potions: int = BASE_POTIONS
+    bag: dict[str, int] = field(default_factory=starting_bag)
 
     def is_alive(self) -> bool:
         return self.hp > 0

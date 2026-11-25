@@ -1,4 +1,4 @@
-"""ショップ・恒久強化・主人公構築を管理するモジュール。"""
+"""ショップ・能力強化・主人公構築を管理するモジュール。"""
 
 from __future__ import annotations
 
@@ -21,22 +21,22 @@ SHOP_UPGRADES = [
     ShopUpgrade(
         "1", "HP強化", SHOP_UPGRADE_COST, "hp", 1,
         HP_PER_UPGRADE, f"+{HP_PER_UPGRADE}",
-        f"最大HPが恒久的に{HP_PER_UPGRADE}上がった。",
+        f"最大HPが{HP_PER_UPGRADE}上がった。",
     ),
     ShopUpgrade(
         "2", "攻撃力強化", SHOP_UPGRADE_COST, "attack", 1,
         ATTACK_PER_UPGRADE, f"+{ATTACK_PER_UPGRADE}",
-        f"攻撃力が恒久的に{ATTACK_PER_UPGRADE}上がった。",
+        f"攻撃力が{ATTACK_PER_UPGRADE}上がった。",
     ),
     ShopUpgrade(
         "3", "防御力強化", SHOP_UPGRADE_COST, "defense", 1,
         DEFENSE_PER_UPGRADE, f"+{DEFENSE_PER_UPGRADE}",
-        f"防御力が恒久的に{DEFENSE_PER_UPGRADE}上がった。",
+        f"防御力が{DEFENSE_PER_UPGRADE}上がった。",
     ),
     ShopUpgrade(
         "4", "素早さ強化", SHOP_UPGRADE_COST, "speed", 1,
         SPEED_PER_UPGRADE, f"+{SPEED_PER_UPGRADE}",
-        f"素早さが恒久的に{SPEED_PER_UPGRADE}上がった。",
+        f"素早さが{SPEED_PER_UPGRADE}上がった。",
     ),
 ]
 
@@ -66,7 +66,7 @@ def get_upgrade_summary(upgrades: PermanentUpgrades) -> str:
     )
 
 
-# ── 恒久強化リセット ──
+# ── 能力強化リセット ──
 
 
 def reset_upgrades(upgrades: PermanentUpgrades) -> None:
@@ -84,13 +84,13 @@ def _show_shop_status(
     soul_shards: int,
     hero: Hero | None = None,
 ) -> None:
-    print(f"恒久強化 {get_upgrade_summary(upgrades)}")
+    print(f"能力強化 {get_upgrade_summary(upgrades)}")
     if hero is not None:
         print(
             f"主人公 HP {hero.hp}/{hero.max_hp}  攻撃力 {hero.attack}  "
-            f"防御力 {hero.defense}  素早さ {hero.speed}  回復薬 {hero.potions}"
+            f"防御力 {hero.defense}  素早さ {hero.speed}  道具 {sum(hero.bag.values())}"
         )
-    print(f"現在の欠片: {soul_shards}")
+    print(f"現在の経験点: {soul_shards}")
 
 
 def _apply_to_upgrades(upgrades: PermanentUpgrades, upgrade: ShopUpgrade) -> None:
@@ -109,7 +109,7 @@ def _apply_to_hero(hero: Hero, upgrade: ShopUpgrade) -> None:
 
 def _format_options() -> str:
     parts = [
-        f"{u.key}: {u.title}({u.preview_text}) 欠片{u.cost}"
+        f"{u.key}: {u.title}({u.preview_text}) 経験点{u.cost}"
         for u in SHOP_UPGRADES
     ]
     parts.append(f"{_EXIT_KEY}: 出発")
@@ -123,7 +123,7 @@ def shop_phase(
     hero: Hero | None = None,
 ) -> int:
     clear_screen()
-    print("\n拠点に戻った。欠片で恒久強化ができる。")
+    print("\n旅の手帳を開いた。経験点を使って強化できる。")
     options_by_key = {u.key: u for u in SHOP_UPGRADES}
     valid_choices = set(options_by_key) | {_EXIT_KEY}
     _show_shop_status(upgrades, soul_shards, hero)
@@ -136,7 +136,7 @@ def shop_phase(
 
         upgrade = options_by_key[choice]
         if soul_shards < upgrade.cost:
-            print("欠片が足りない。")
+            print("経験点が足りない。")
             _show_shop_status(upgrades, soul_shards, hero)
             continue
 

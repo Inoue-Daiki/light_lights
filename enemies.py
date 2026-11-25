@@ -5,7 +5,9 @@
 
 from __future__ import annotations
 
+import json
 import random
+from pathlib import Path
 from dataclasses import dataclass
 
 from config import (
@@ -35,10 +37,13 @@ class EnemyTemplate:
     defense: int
     speed: int
 
+    greeting: str = ""
+
     def create(self, floor: int) -> Enemy:
         """階層に応じてスケーリングした Enemy を生成する。"""
         return Enemy(
             name=self.name,
+            greeting=self.greeting,
             hp=self.hp + floor * ENEMY_HP_PER_FLOOR,
             attack=self.attack + floor * ENEMY_ATTACK_PER_FLOOR,
             defense=self.defense + floor // ENEMY_DEFENSE_PER_FLOOR_DIVISOR,
@@ -51,11 +56,8 @@ class EnemyTemplate:
 # ── 敵テンプレート一覧 ──
 # 新しい敵を追加するにはここにエントリを追加する。
 ENEMY_TEMPLATES: list[EnemyTemplate] = [
-    EnemyTemplate("Slime",    hp=10, attack= 6, defense=1, speed=4),
-    EnemyTemplate("Bandit",   hp=14, attack= 7, defense=2, speed=5),
-    EnemyTemplate("Skeleton", hp=18, attack= 9, defense=3, speed=4),
-    EnemyTemplate("Wolf",     hp=16, attack=10, defense=2, speed=7),
-    EnemyTemplate("Knight",   hp=22, attack=11, defense=4, speed=3),
+    EnemyTemplate(**row)
+    for row in json.loads((Path(__file__).resolve().parent / "data" / "enemies.json").read_text(encoding="utf-8"))
 ]
 
 

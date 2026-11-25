@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from config import EVENT_TRIGGER_CHANCE, FREE_EVENT_CHANCE
+from items import ITEMS
 from models import EventOption, Hero, RunState
 from ui import PromptChoice, clear_screen
 
@@ -29,8 +30,9 @@ def _grant_reward(
         print(f"HPが{healed}回復した。")
         return
     if reward_kind == "potion":
-        hero.potions += reward_amount
-        print(f"回復薬を{reward_amount}個獲得した。")
+        key = random.choice(list(ITEMS))
+        hero.bag[key] = hero.bag.get(key, 0) + reward_amount
+        print(f"{ITEMS[key].name}を{reward_amount}個獲得した。")
         return
     if reward_kind == "attack":
         hero.attack += reward_amount
@@ -128,16 +130,16 @@ class PaidEventTemplate(Event):
 # 新しいイベントを追加するにはここにエントリを追加するだけでよい。
 
 FREE_EVENT_TEMPLATES: list[FreeEventTemplate] = [
-    FreeEventTemplate("小さな幸運", "泉", "澄んだ泉を見つけた。",     "heal", 6, 12),
-    FreeEventTemplate("小さな幸運", "袋", "落し物の袋を見つけた。",   "gold", 8, 16),
+    FreeEventTemplate("湧き水", "W", "澄んだ泉を見つけた。",     "heal", 6, 12),
+    FreeEventTemplate("落とし物", "C", "落し物の袋を見つけた。",   "gold", 8, 16),
 ]
 
 PAID_EVENT_TEMPLATES: list[PaidEventTemplate] = [
-    PaidEventTemplate("行商人",       "商", "代金を払えば回復薬を分けてもらえる。",             "potion"),
-    PaidEventTemplate("怪しい祭壇",   "祭", "供物を捧げれば力を得られるかもしれない。",         "attack"),
-    PaidEventTemplate("鉄壁の鍛冶台", "鍛", "資材を払えば防具を鍛えられる。",                   "defense"),
-    PaidEventTemplate("巡礼の泉",     "巡", "硬貨を投げれば癒やしが返ってくることがある。",     "heal"),
-    PaidEventTemplate("風読みの道標", "風", "旅路を読む者に対価を払えば、身のこなしを磨ける。", "speed"),
+    PaidEventTemplate("行商人",       "S", "代金を払えば旅の道具を分けてもらえる。",             "potion"),
+    PaidEventTemplate("木こり小屋",   "A", "薪割りの稽古をつけてくれるそうだ。",         "attack"),
+    PaidEventTemplate("鍛冶屋", "D", "資材を払えば防具を鍛えられる。",                   "defense"),
+    PaidEventTemplate("街道の宿",     "H", "空き部屋があれば、少し休めそうだ。",     "heal"),
+    PaidEventTemplate("馬場", "R", "馬丁が走り方を教えてくれるそうだ。", "speed"),
 ]
 
 

@@ -10,7 +10,7 @@ enemies.py   敵テンプレート定義・階層スケーリング・敵生成
 battle.py    ターン制戦闘エンジン
 events.py    イベント階層クラスとイベント発火
 shop.py      ショップ・恒久強化・主人公構築
-route.py     ルート木の生成・ダイアグラム表示・分岐選択
+route.py     街道マップの生成・ダイアグラム表示・分岐選択
 game.py      1ランの探索ループ（オーケストレーション）
 main.py      エントリポイント・メインメニュー
 ```
@@ -61,7 +61,7 @@ main.py            game, models, shop, ui
 | `battle.py` | 戦闘エンジン | `battle()` |
 | `events.py` | イベント定義と発火 | `Event` 階層, `plan_event()`, `run_event()` |
 | `shop.py` | ショップ・恒久強化・主人公構築 | `shop_phase()`, `build_hero()`, `get_upgrade_summary()` |
-| `route.py` | ルート木・ダイアグラム・分岐 | `build_branch_options()`, `show_status()`, `choose_next_route_with_status()` |
+| `route.py` | 街道マップ・ダイアグラム・分岐 | `build_map()`, `show_map()`, `choose_next()` |
 | `game.py` | 1ランのオーケストレーション | `run_once()` |
 | `main.py` | エントリポイント・メインメニュー | `main()` |
 
@@ -75,7 +75,7 @@ main.py            game, models, shop, ui
 探索ループ・死亡処理を全て担っていた。3つの単一責任モジュールに分割：
 
 - **`shop.py`** — 主人公構築 (`build_hero`)、恒久強化の購入と表示、リセット処理
-- **`route.py`** — ルート木の再帰的生成、ダイアグラムのフォーマット、分岐UI
+- **`route.py`** — 分岐と合流のある街道マップの生成、ダイアグラムのフォーマット、分岐UI
 - **`game.py`** — 探索ループの制御フロー（イベント/戦闘/踏破の振り分けのみ）
 
 ### `diagram_label` のクラス属性化
@@ -104,7 +104,7 @@ main.py            game, models, shop, ui
 ## 拡張ガイド
 
 ### 新しい敵を追加する
-`enemies.py` の `ENEMY_TEMPLATES` にエントリを追加。
+`data/enemies.json` にエントリを追加。道具は `data/items.json` で編集できる。
 
 ### ゲームバランスを調整する
 `config.py` の該当定数を変更。コード変更は不要。
