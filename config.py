@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-# ── 灯路・区画 ──
-ROUTE_LABEL = "灯路"
-ROUTE_NAME = "薄明の回廊"
+# ── 街道・区画 ──
+ROUTE_LABEL = "街道"
+ROUTE_NAME = "村と町を結ぶ街道"
 SECTION_LABEL = "区画"
 TOTAL_FLOORS = 8
 
@@ -13,16 +13,12 @@ BASE_HP = 30
 BASE_ATTACK = 8
 BASE_DEFENSE = 4
 BASE_SPEED = 5
-BASE_POTIONS = 2
 
 # ── 恒久強化の 1 段階あたり上昇値 ──
 HP_PER_UPGRADE = 5
 ATTACK_PER_UPGRADE = 2
 DEFENSE_PER_UPGRADE = 2
 SPEED_PER_UPGRADE = 1
-
-# ── 回復薬 ──
-POTION_HEAL_AMOUNT = 10
 
 # ── 戦闘 ──
 DAMAGE_VARIANCE_MIN = -1

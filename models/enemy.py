@@ -13,6 +13,8 @@ class Enemy:
     shard_reward: int
     gold_reward: int
 
+    greeting: str = ""
+
     def is_alive(self) -> bool:
         return self.hp > 0
 

@@ -11,7 +11,7 @@ def show_title() -> None:
     print("      Light Lights: Roguelite Text RPG")
     print("=" * 44)
     print("主人公の基本パラメータ: HP / 攻撃力 / 防御力")
-    print("戦って欠片を集め、拠点で恒久強化しながら最深部を目指す。")
+    print("村の郵便屋に頼まれた手紙を、街道の先の町へ届けよう。")
 
 
 def main() -> None:
@@ -24,8 +24,8 @@ def main() -> None:
     while True:
         print("\nメニュー")
         print("1: 探索に出る")
-        print("2: 恒久強化を見る")
-        print("3: 恒久強化をする")
+        print("2: 能力強化を見る")
+        print("3: 能力強化をする")
         print("4: 終了")
         choice = prompt_choice("選択: ", {"1", "2", "3", "4"})
 
@@ -34,8 +34,8 @@ def main() -> None:
             return
 
         if choice == "2":
-            print(f"恒久強化 {get_upgrade_summary(upgrades)}")
-            print(f"所持欠片: {soul_shards}")
+            print(f"能力強化 {get_upgrade_summary(upgrades)}")
+            print(f"所持経験点: {soul_shards}")
             wait_for_enter()
             continue
 
@@ -45,9 +45,9 @@ def main() -> None:
 
         result = run_once(upgrades, soul_shards, prompt_choice)
         soul_shards = result.soul_shards
-        print(f"現在の累計欠片は {soul_shards}。")
+        print(f"現在の累計経験点は {soul_shards}。")
         if result.won:
-            print("次の探索ではさらに奥を目指せる。")
+            print("郵便屋が次の手紙を用意して待っている。")
 
 
 if __name__ == "__main__":

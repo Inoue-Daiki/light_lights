@@ -1,0 +1,7 @@
+[
+  {"name":"草スライム","hp":10,"attack":6,"defense":1,"speed":4,"greeting":"草むらが揺れた。頭にひなぎくが一本咲いている。"},
+  {"name":"荷車ネズミ","hp":14,"attack":7,"defense":2,"speed":5,"greeting":"パン袋を引きずっている。目が合うと袋の上に座った。"},
+  {"name":"山イノシシ","hp":18,"attack":9,"defense":3,"speed":4,"greeting":"道の真ん中に、掘りかけの芋がある。"},
+  {"name":"灰色オオカミ","hp":16,"attack":10,"defense":2,"speed":7,"greeting":"耳だけがこちらを向いた。"},
+  {"name":"橋の番ガチョウ","hp":22,"attack":11,"defense":4,"speed":3,"greeting":"橋を一歩渡ると一声鳴く。一歩戻ると黙る。"}
+]
