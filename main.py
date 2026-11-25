@@ -11,7 +11,7 @@ def show_title() -> None:
     print("      Light Lights: Roguelite Text RPG")
     print("=" * 44)
     print("主人公の基本パラメータ: HP / 攻撃力 / 防御力")
-    print("村の郵便屋に頼まれた手紙を、街道の先の町へ届けよう。")
+    print("街道を進み、町の門を目指す。")
 
 
 def main() -> None:
@@ -46,8 +46,6 @@ def main() -> None:
         result = run_once(upgrades, soul_shards, prompt_choice)
         soul_shards = result.soul_shards
         print(f"現在の累計経験点は {soul_shards}。")
-        if result.won:
-            print("郵便屋が次の手紙を用意して待っている。")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,52 @@
+{
+  "free": [
+    {
+      "name": "湧き水",
+      "diagram_label": "W",
+      "flavor_text": "澄んだ泉を見つけた。",
+      "reward_kind": "heal",
+      "min_amount": 6,
+      "max_amount": 12
+    },
+    {
+      "name": "落とし物",
+      "diagram_label": "C",
+      "flavor_text": "落し物の袋を見つけた。",
+      "reward_kind": "gold",
+      "min_amount": 8,
+      "max_amount": 16
+    }
+  ],
+  "paid": [
+    {
+      "name": "行商人",
+      "diagram_label": "S",
+      "description": "旅の道具を購入できる。",
+      "reward_kind": "potion"
+    },
+    {
+      "name": "木こり小屋",
+      "diagram_label": "A",
+      "description": "薪割りで攻撃力を鍛えられる。",
+      "reward_kind": "attack"
+    },
+    {
+      "name": "鍛冶屋",
+      "diagram_label": "D",
+      "description": "防具を強化できる。",
+      "reward_kind": "defense"
+    },
+    {
+      "name": "街道の宿",
+      "diagram_label": "H",
+      "description": "宿で休憩できる。",
+      "reward_kind": "heal"
+    },
+    {
+      "name": "馬場",
+      "diagram_label": "R",
+      "description": "走り込みで素早さを鍛えられる。",
+      "reward_kind": "speed"
+    }
+  ]
+}

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import json
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 from config import EVENT_TRIGGER_CHANCE, FREE_EVENT_CHANCE
-from items import ITEMS
+from items import DATA_DIR, ITEMS
 from models import EventOption, Hero, RunState
 from ui import PromptChoice, clear_screen
 
@@ -65,7 +66,7 @@ class Event(ABC):
 class FreeEventTemplate(Event):
     """リスクなし・コストなしのボーナスイベント。
 
-    新しい無料イベントを追加するには FREE_EVENT_TEMPLATES にエントリを追加する。
+    新しい無料イベントを追加するには data/events.json の free にエントリを追加する。
     reward_kind: "heal" | "gold" | "potion" | "attack" | "defense" | "speed"
     """
 
@@ -88,7 +89,7 @@ class FreeEventTemplate(Event):
 class PaidEventTemplate(Event):
     """所持金を払ってリターンを狙うリスク型イベント。
 
-    新しい有料イベントを追加するには PAID_EVENT_TEMPLATES にエントリを追加する。
+    新しい有料イベントを追加するには data/events.json の paid にエントリを追加する。
     reward_kind: "heal" | "gold" | "potion" | "attack" | "defense" | "speed"
     """
 
@@ -127,20 +128,9 @@ class PaidEventTemplate(Event):
 
 
 # ── イベント一覧 ──
-# 新しいイベントを追加するにはここにエントリを追加するだけでよい。
-
-FREE_EVENT_TEMPLATES: list[FreeEventTemplate] = [
-    FreeEventTemplate("湧き水", "W", "澄んだ泉を見つけた。",     "heal", 6, 12),
-    FreeEventTemplate("落とし物", "C", "落し物の袋を見つけた。",   "gold", 8, 16),
-]
-
-PAID_EVENT_TEMPLATES: list[PaidEventTemplate] = [
-    PaidEventTemplate("行商人",       "S", "代金を払えば旅の道具を分けてもらえる。",             "potion"),
-    PaidEventTemplate("木こり小屋",   "A", "薪割りの稽古をつけてくれるそうだ。",         "attack"),
-    PaidEventTemplate("鍛冶屋", "D", "資材を払えば防具を鍛えられる。",                   "defense"),
-    PaidEventTemplate("街道の宿",     "H", "空き部屋があれば、少し休めそうだ。",     "heal"),
-    PaidEventTemplate("馬場", "R", "馬丁が走り方を教えてくれるそうだ。", "speed"),
-]
+_records = json.loads((DATA_DIR / "events.json").read_text(encoding="utf-8"))
+FREE_EVENT_TEMPLATES = [FreeEventTemplate(**entry) for entry in _records["free"]]
+PAID_EVENT_TEMPLATES = [PaidEventTemplate(**entry) for entry in _records["paid"]]
 
 
 # ── 公開API ──

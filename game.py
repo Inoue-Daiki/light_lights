@@ -79,7 +79,7 @@ def run_once(
             print(f"HP {hero.hp}/{hero.max_hp}　所持金 {run_state.gold}")
             path.append(choose_next(node, rows[floor], prompt_choice))
 
-    print("町の門をくぐった。頼まれた手紙を届けよう。")
+    print("町の門に到着した。探索完了。")
     run_state.soul_shards += CLEAR_BONUS_SHARDS
     print(f"踏破報酬として経験点を{CLEAR_BONUS_SHARDS}獲得。")
     wait_for_enter()

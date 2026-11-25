@@ -43,7 +43,7 @@ class JourneyTests(TestCase):
         counter.assert_called_once()
 
 
-    def test_deliver_letter(self):
+    def test_reach_town_gate(self):
         for name in ("clear_screen", "wait_for_enter", "run_event"):
             self.replace(game, name, Mock())
         self.replace(game, "_handle_battle_floor", Mock(return_value=None))

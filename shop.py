@@ -123,7 +123,7 @@ def shop_phase(
     hero: Hero | None = None,
 ) -> int:
     clear_screen()
-    print("\n旅の手帳を開いた。経験点を使って強化できる。")
+    print("\n経験点を使って能力を強化できる。")
     options_by_key = {u.key: u for u in SHOP_UPGRADES}
     valid_choices = set(options_by_key) | {_EXIT_KEY}
     _show_shop_status(upgrades, soul_shards, hero)

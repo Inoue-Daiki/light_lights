@@ -110,8 +110,7 @@ main.py            game, models, shop, ui
 `config.py` の該当定数を変更。コード変更は不要。
 
 ### 新しいイベントを追加する
-1. `events.py` の `FREE_EVENT_TEMPLATES` または `PAID_EVENT_TEMPLATES` にエントリを追加する
-2. 無料イベントは `FreeEventTemplate`、有料イベントは `PaidEventTemplate` を使用する
+`data/events.json` の `free` または `paid` に、既存の地点と同じ形式でエントリを追加する。
 
 ### ボス戦を追加する
 1. `config.py` にボス関連定数を追加

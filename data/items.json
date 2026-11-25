@@ -1,4 +1,14 @@
 {
-  "herb": {"name":"薬草","description":"村の薬屋が一回分ずつ包んでくれた。","heal":10,"starting_count":1},
-  "bread": {"name":"くるみパン","description":"包み紙に「お昼まで待つこと」とある。","heal":6,"starting_count":1}
+  "herb": {
+    "name": "薬草",
+    "description": "回復用の薬草。",
+    "heal": 10,
+    "starting_count": 1
+  },
+  "bread": {
+    "name": "パン",
+    "description": "携帯用の食料。",
+    "heal": 6,
+    "starting_count": 1
+  }
 }
